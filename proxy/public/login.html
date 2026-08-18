@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Panel Login</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="centered">
+    <form class="card login-card" id="loginForm">
+      <h1>Jog-Wheel Panel</h1>
+      <input type="password" id="password" name="password" placeholder="Panel password" autocomplete="current-password" autofocus />
+      <div class="error-text" id="loginError"></div>
+      <button type="submit">Sign in</button>
+    </form>
+  </div>
+  <script>
+    const form = document.getElementById('loginForm');
+    const errorEl = document.getElementById('loginError');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.textContent = '';
+      const password = document.getElementById('password').value;
+      const res = await fetch('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        window.location.href = '/';
+      } else {
+        errorEl.textContent = 'Wrong password.';
+      }
+    });
+  </script>
+</body>
+</html>

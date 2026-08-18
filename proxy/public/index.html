@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jog-Wheel Control Panel</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>JOG-WHEEL CONTROL PANEL</h1>
+    <div class="row">
+      <span id="gamepadStatus" class="small">No gamepad</span>
+      <button id="panicStop">PANIC STOP</button>
+      <button id="logoutBtn" class="btn secondary" style="width:auto;">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="offlineBanner" class="status-banner offline">Lovense app offline (error 507). Sends are paused — open the Remote app on the paired device.</div>
+    <div id="reconnectingBanner" class="status-banner reconnecting">Lost contact with the proxy. Reconnecting…</div>
+
+    <section class="card link-section" id="linkSection">
+      <h2>Link a toy</h2>
+      <p class="small">One-time: scan the QR with the Lovense Remote app, or enter the code on PC Remote.</p>
+      <button class="btn" id="linkBtn" style="width:auto;">Get link QR</button>
+      <div id="linkResult"></div>
+    </section>
+
+    <section id="toysContainer"></section>
+
+    <section class="card empty-state" id="emptyState" style="display:none;">
+      <p>No toys linked yet. Use "Get link QR" above, then open the Lovense Remote app.</p>
+    </section>
+
+    <section class="card gamepad-section">
+      <h2>Gamepad mapping</h2>
+      <p class="small">Deadzone ~0.15. Push depth sets creep rate; centering the stick holds the current level. Focus mode: only the selected channel responds to the primary stick.</p>
+      <div class="row" style="margin-bottom:10px;">
+        <label class="small">
+          <input type="checkbox" id="focusModeToggle" /> Focus / solo mode
+        </label>
+        <select id="focusChannelSelect"></select>
+      </div>
+      <table class="mapping" id="mappingTable">
+        <thead><tr><th>Axis</th><th>Channel</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <dialog id="calibrateDialog">
+    <h3 id="calibrateTitle">Calibrate</h3>
+    <p class="small" id="calibrateStep"></p>
+    <div class="row">
+      <button class="btn" id="calibratePulseBtn" style="width:auto;">Pulse this motor</button>
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <button class="btn secondary" id="calibrateFeltBtn" style="width:auto;">Felt it — next</button>
+      <button class="btn secondary" id="calibrateNothingBtn" style="width:auto;">Felt nothing</button>
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <button class="btn secondary" id="calibrateCancelBtn" style="width:auto;">Cancel</button>
+    </div>
+  </dialog>
+
+  <script src="/js/commandManager.js"></script>
+  <script src="/js/harvest.js"></script>
+  <script src="/js/calibrate.js"></script>
+  <script src="/js/gamepad.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
