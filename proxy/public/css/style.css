@@ -116,50 +116,42 @@ main { padding: 20px; max-width: 1100px; margin: 0 auto; }
 .badge.ok { color: var(--ok); border-color: var(--ok); }
 .badge.warn { color: var(--warn); border-color: var(--warn); }
 
-.wheels {
+.dial-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+  justify-content: center;
 }
 
-.wheel {
-  width: 150px;
-  text-align: center;
-  user-select: none;
-}
-.wheel .dial {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  margin: 0 auto 8px;
-  position: relative;
-  background: conic-gradient(var(--accent) calc(var(--pct) * 1%), var(--panel-2) 0);
-  cursor: grab;
-  touch-action: none;
-}
-.wheel .dial:active { cursor: grabbing; }
-.wheel .dial::after {
-  content: "";
-  position: absolute;
-  inset: 12px;
-  border-radius: 50%;
-  background: var(--panel);
-  z-index: 0;
-}
-.wheel .level {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.3rem;
-}
-.wheel .label { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
-.wheel .buttons { display: flex; gap: 6px; justify-content: center; }
-.wheel .buttons button {
-  width: 32px; height: 32px;
+.dial-widget { width: 240px; text-align: center; user-select: none; }
+.dial-widget .compound-dial { width: 220px; height: 220px; display: block; margin: 0 auto 10px; touch-action: none; }
+
+.ring-track { fill: none; stroke: var(--panel-2); stroke-width: 2; pointer-events: none; }
+.dial-center { fill: var(--muted); pointer-events: none; }
+.stick-line { stroke-width: 2; pointer-events: none; }
+.stick-line[data-ring-color="0"] { stroke: var(--accent); }
+.stick-line[data-ring-color="1"] { stroke: #ff9f6e; }
+.stick-line[data-ring-color="2"] { stroke: #7be08a; }
+.stick-line[data-ring-color="3"] { stroke: #d68bff; }
+
+.stick-handle { stroke: var(--panel); stroke-width: 2; cursor: grab; pointer-events: all; }
+.stick-handle[data-ring-color="0"] { fill: var(--accent); }
+.stick-handle[data-ring-color="1"] { fill: #ff9f6e; }
+.stick-handle[data-ring-color="2"] { fill: #7be08a; }
+.stick-handle[data-ring-color="3"] { fill: #d68bff; }
+.stick-handle:hover { filter: brightness(1.15); }
+.stick-handle.dragging { cursor: grabbing; filter: brightness(1.3); }
+
+.dial-readouts { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.dial-readout-row { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+.ring-swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.ring-swatch[data-ring-color="0"] { background: var(--accent); }
+.ring-swatch[data-ring-color="1"] { background: #ff9f6e; }
+.ring-swatch[data-ring-color="2"] { background: #7be08a; }
+.ring-swatch[data-ring-color="3"] { background: #d68bff; }
+.readout-label { flex: 1; text-align: left; color: var(--muted); }
+.readout-level { font-weight: 700; min-width: 1.5em; text-align: right; }
+.dial-readout-row .buttons { display: flex; gap: 6px; }
+.dial-readout-row .buttons button {
+  width: 28px; height: 28px;
   border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--panel-2);
@@ -167,6 +159,8 @@ main { padding: 20px; max-width: 1100px; margin: 0 auto; }
   cursor: pointer;
   font-size: 1rem;
 }
+
+.dial-toggle { display: block; margin-top: 4px; color: var(--muted); }
 
 .link-section, .gamepad-section, .empty-state {
   margin-bottom: 20px;

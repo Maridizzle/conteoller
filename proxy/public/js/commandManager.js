@@ -23,7 +23,20 @@ const CommandManager = (() => {
   }
 
   function registerToy(toyId, motors) {
-    if (toys.has(toyId)) return toys.get(toyId);
+    const existing = toys.get(toyId);
+    if (existing) {
+      // Reconcile against the freshly-resolved motor list (harvest/calibrate
+      // can change a toy's motors between renders): keep levels for actions
+      // still present, default new ones to 0, drop ones that disappeared.
+      existing.motors = motors;
+      existing.levels = Object.fromEntries(
+        motors.map((m) => [m.action, existing.levels[m.action] ?? 0])
+      );
+      existing.lastSentBuckets = Object.fromEntries(
+        motors.map((m) => [m.action, existing.lastSentBuckets[m.action] ?? null])
+      );
+      return existing;
+    }
     const state = {
       motors, // [{ action, maxSteps, type }]
       levels: Object.fromEntries(motors.map((m) => [m.action, 0])),
