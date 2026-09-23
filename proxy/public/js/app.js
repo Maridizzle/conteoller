@@ -1,39 +1,74 @@
-// Panel shell: fetches toys/config, renders one compound dial per toy
-// (mouse control per spec §10), wires Panic Stop, link flow, and error
-// banners. Gamepad + harvest/calibration wiring live in their own files
-// and hook into the same CommandManager / render functions via
+// Panel shell: fetches toys/config, renders one concentric-arc dial per
+// toy (270 deg sweep, bead-on-track), wires Panic Stop, link flow, and
+// error banners. Gamepad + harvest/calibration wiring live in their own
+// files and hook into the same CommandManager / render functions via
 // window.Panel*.
 
 let actionRanges = {};
-const toyMotorsById = new Map(); // toyId -> motors[] (for harvest/calibrate/gamepad UI)
+const toyMotorsById = new Map(); // toyId -> { name, motors, verified }
 
-// --- Compound dial: concentric rings, one per motor, each with a
-// draggable "stick" (line + handle) whose distance from center sets that
-// motor's level. Angle is presentation-only — CommandManager never sees
-// it — stored per toy here, either one shared angle ("connected" mode,
-// every ring's stick points the same direction) or one angle per motor
-// ("separate" mode, each stick points wherever it was last dragged).
-const dialAngleState = new Map(); // toyId -> { mode, shared, perMotor: {action: angle} }
+// ---------------------------------------------------------------
+// Concentric arc dial — 270 deg sweep with hard stops.
+//
+// Each ring's dot lives at a FIXED radius (its own ring track). Level
+// is the dot's ANGULAR position along a 270 deg arc: 0 at the lower-
+// left stop, max at the lower-right stop. The dot's angle is set
+// DIRECTLY from the pointer's angle relative to center — like a real
+// hand on a pivot. Close to center = coarse (tiny sideways nudge
+// sweeps a huge angle), far out = fine — natural pivot geometry.
+// You can press anywhere near a ring, not just the dot: each ring
+// owns a wide invisible drag surface.
+// ---------------------------------------------------------------
 
 const DIAL_VIEWBOX = 200;
 const DIAL_CENTER = 100;
 const OUTER_MAX_R = 88;
 const RING_GAP = 26;
-const HANDLE_R = 8;
-// At level 0 a handle still sits HANDLE_MIN_R out from center, never
-// exactly on it — otherwise every ring's handle would draw on the same
-// point at rest, and only the topmost (innermost) one could ever be
-// grabbed. Rings also default to different angles so two at-rest handles
-// aren't stacked along the same line either. The combination is sized so
-// two adjacent rings' handle circles (radius HANDLE_R) don't overlap at
-// rest: chord length 2*HANDLE_MIN_R*sin(step/2) must exceed 2*HANDLE_R.
-const HANDLE_MIN_R = 24;
-const DEFAULT_ANGLE_STEP = Math.PI / 4; // 45°, spread between rings' resting angles
-const DRAG_EPSILON = 3; // viewBox units; below this, atan2 is degenerate
+const HANDLE_R = 7;
+const ANGLE_START = (3 * Math.PI) / 4;     // 135 deg — lower-left, level 0
+const ANGLE_SWEEP = (3 * Math.PI) / 2;     // 270 deg clockwise over the top
+const HIT_MARGIN = RING_GAP / 2;           // how far past a ring's track its drag surface grabs
 
-function defaultAngleForRing(ringIndex) {
-  return -Math.PI / 2 + ringIndex * DEFAULT_ANGLE_STEP;
+function ringMaxRadius(i) { return OUTER_MAX_R - i * RING_GAP; }
+function hitRadius(i) { return Math.min(ringMaxRadius(i) + HIT_MARGIN, 98); }
+function angleForLevel(level, maxSteps) { return ANGLE_START + (level / maxSteps) * ANGLE_SWEEP; }
+
+// Pointer angle -> level fraction 0..1. Angles in the bottom gap
+// (past either stop) clamp to whichever stop is nearer.
+function levelFractionFromPointer(dx, dy) {
+  const twoPi = Math.PI * 2;
+  let a = Math.atan2(dy, dx);
+  while (a < ANGLE_START) a += twoPi;
+  while (a >= ANGLE_START + twoPi) a -= twoPi;
+  const angleEnd = ANGLE_START + ANGLE_SWEEP;
+  if (a <= angleEnd) return (a - ANGLE_START) / ANGLE_SWEEP;
+  const gapMid = angleEnd + (twoPi - ANGLE_SWEEP) / 2;
+  return a < gapMid ? 1 : 0;
 }
+
+// SVG arc path for a ring track from ANGLE_START to ANGLE_START +
+// ANGLE_SWEEP, leaving the bottom gap visible (the hard stops).
+function describeArc(r) {
+  const sa = ANGLE_START, ea = ANGLE_START + ANGLE_SWEEP;
+  const sx = DIAL_CENTER + r * Math.cos(sa), sy = DIAL_CENTER + r * Math.sin(sa);
+  const ex = DIAL_CENTER + r * Math.cos(ea), ey = DIAL_CENTER + r * Math.sin(ea);
+  return `M ${sx} ${sy} A ${r} ${r} 0 1 1 ${ex} ${ey}`;
+}
+
+function pointerToDialCoords(svgEl, clientX, clientY) {
+  const rect = svgEl.getBoundingClientRect();
+  const scaleX = DIAL_VIEWBOX / rect.width;
+  const scaleY = DIAL_VIEWBOX / rect.height;
+  return {
+    dx: (clientX - rect.left) * scaleX - DIAL_CENTER,
+    dy: (clientY - rect.top) * scaleY - DIAL_CENTER,
+  };
+}
+
+
+// ---------------------------------------------------------------
+// Panel events — command result handling, reconnect logic
+// ---------------------------------------------------------------
 
 window.PanelEvents = {
   onCommandResult(toyId, data) {
@@ -81,6 +116,11 @@ function showBanner(id, show, text) {
   el.classList.toggle('show', show);
 }
 
+
+// ---------------------------------------------------------------
+// Data loading
+// ---------------------------------------------------------------
+
 async function loadConfig() {
   const res = await fetch('/config');
   const data = await res.json();
@@ -103,6 +143,11 @@ async function loadToys() {
   document.getElementById('linkSection').style.display = data.toys.length ? 'none' : 'block';
   return data.toys;
 }
+
+
+// ---------------------------------------------------------------
+// Toy rendering — one card + arc dial per toy
+// ---------------------------------------------------------------
 
 function renderToys(toys) {
   const container = document.getElementById('toysContainer');
@@ -143,113 +188,65 @@ function renderToys(toys) {
   window.PanelGamepad?.refreshChannels();
 }
 
-function ringMaxRadius(ringIndex) {
-  return OUTER_MAX_R - ringIndex * RING_GAP;
-}
 
-// Angle is purely presentational (CommandManager never sees it). One
-// entry per toy: a shared angle used when "connected", plus a per-motor
-// angle used when "separate". Reconciled against the current motor list
-// on every call so a harvest/calibrate re-render can't leave stale keys.
-function getDialAngleState(toyId, motors) {
-  let state = dialAngleState.get(toyId);
-  if (!state) {
-    state = { mode: 'separate', shared: defaultAngleForRing(0), perMotor: {} };
-    dialAngleState.set(toyId, state);
-  }
-  const nextPerMotor = {};
-  motors.forEach((m, i) => {
-    nextPerMotor[m.action] = state.perMotor[m.action] ?? defaultAngleForRing(i);
-  });
-  state.perMotor = nextPerMotor;
-  return state;
-}
+// ---------------------------------------------------------------
+// Arc dial — render, drag, scroll, step buttons
+// ---------------------------------------------------------------
 
-function angleForMotor(toyId, motor, ringIndex) {
-  const state = dialAngleState.get(toyId);
-  if (!state) return defaultAngleForRing(ringIndex);
-  return state.mode === 'connected' ? state.shared : (state.perMotor[motor.action] ?? defaultAngleForRing(ringIndex));
-}
-
-function setAngleForMotor(toyId, motor, theta) {
-  const state = dialAngleState.get(toyId);
-  if (!state) return;
-  if (state.mode === 'connected') state.shared = theta;
-  else state.perMotor[motor.action] = theta;
-}
-
-function pointerToDialCoords(svgEl, clientX, clientY) {
-  const rect = svgEl.getBoundingClientRect();
-  const scaleX = DIAL_VIEWBOX / rect.width;
-  const scaleY = DIAL_VIEWBOX / rect.height;
-  const px = (clientX - rect.left) * scaleX;
-  const py = (clientY - rect.top) * scaleY;
-  return { dx: px - DIAL_CENTER, dy: py - DIAL_CENTER };
-}
-
-// The only place that ever writes a handle's on-screen position — always
-// derives it from the *committed* level (never a raw drag pixel), so the
-// stick always snaps to the actual bucketed/sent value.
+// Places a handle bead at the angle corresponding to its motor's
+// current level, always at its ring's fixed radius.
 function renderRing(toyId, ref) {
-  const { motor, ringIndex, line, handle, readoutLevel } = ref;
   const state = CommandManager.getState(toyId);
-  const level = state.levels[motor.action] ?? 0;
-  const maxR = ringMaxRadius(ringIndex);
-  const r = HANDLE_MIN_R + (level / motor.maxSteps) * (maxR - HANDLE_MIN_R);
-  const angle = angleForMotor(toyId, motor, ringIndex);
-  const x = DIAL_CENTER + r * Math.cos(angle);
-  const y = DIAL_CENTER + r * Math.sin(angle);
-  line.setAttribute('x2', x);
-  line.setAttribute('y2', y);
-  handle.setAttribute('cx', x);
-  handle.setAttribute('cy', y);
-  readoutLevel.textContent = level;
+  const level = state.levels[ref.motor.action] ?? 0;
+  const radius = ringMaxRadius(ref.ringIndex);
+  const angle = angleForLevel(level, ref.motor.maxSteps);
+  const x = DIAL_CENTER + radius * Math.cos(angle);
+  const y = DIAL_CENTER + radius * Math.sin(angle);
+  ref.handle.setAttribute('cx', x);
+  ref.handle.setAttribute('cy', y);
+  ref.readoutLevel.textContent = level;
 }
 
-// Radial-pull drag: a handle's distance from center sets its motor's
-// level (absolute, not the gamepad's relative/accumulating jog model).
-// Re-renders every ring on the toy after each move — a no-op for
-// untouched rings in "separate" mode, and exactly what rotates every
-// other stick to match in "connected" mode.
-function wireHandleDrag(svgEl, toyId, ref, refsList) {
-  const { motor, ringIndex, handle } = ref;
+// Drag wired to invisible hit surfaces. Pointer angle relative to
+// center directly maps to level — the absolute-angle model.
+function wireRingDrag(svgEl, toyId, ref, refsList, isConnected) {
   let dragging = false;
 
-  handle.addEventListener('pointerdown', (e) => {
+  function applyFromPointer(e) {
+    const c = pointerToDialCoords(svgEl, e.clientX, e.clientY);
+    const fraction = levelFractionFromPointer(c.dx, c.dy);
+    if (isConnected()) {
+      refsList.forEach((other) => {
+        CommandManager.setLevel(toyId, other.motor.action, fraction * other.motor.maxSteps);
+      });
+    } else {
+      CommandManager.setLevel(toyId, ref.motor.action, fraction * ref.motor.maxSteps);
+    }
+  }
+
+  ref.hit.addEventListener('pointerdown', (e) => {
     dragging = true;
-    handle.classList.add('dragging');
-    handle.setPointerCapture(e.pointerId);
+    ref.hit.classList.add('dragging');
+    ref.handle.classList.add('dragging');
+    ref.hit.setPointerCapture(e.pointerId);
+    applyFromPointer(e);
   });
 
-  handle.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
-    const { dx, dy } = pointerToDialCoords(svgEl, e.clientX, e.clientY);
-    const r = Math.hypot(dx, dy);
-    const theta = Math.atan2(dy, dx);
-    const maxR = ringMaxRadius(ringIndex);
-    const rClamped = Math.max(0, Math.min(r, maxR));
-
-    // Skip the angle write when right on top of center — atan2(0,0) is
-    // degenerate and would otherwise snap the stick to angle 0.
-    if (rClamped > DRAG_EPSILON) setAngleForMotor(toyId, motor, theta);
-
-    // Inverse of renderRing's r = HANDLE_MIN_R + level-fraction * (maxR -
-    // HANDLE_MIN_R): dragging inside the dead zone floors at level 0.
-    const usableR = Math.max(0, rClamped - HANDLE_MIN_R);
-    CommandManager.setLevel(toyId, motor.action, (usableR / (maxR - HANDLE_MIN_R)) * motor.maxSteps);
-    refsList.forEach((otherRef) => renderRing(toyId, otherRef));
+  ref.hit.addEventListener('pointermove', (e) => {
+    if (dragging) applyFromPointer(e);
   });
 
-  const endDrag = () => {
+  function end() {
     dragging = false;
-    handle.classList.remove('dragging');
-  };
-  handle.addEventListener('pointerup', endDrag);
-  handle.addEventListener('pointercancel', endDrag);
+    ref.hit.classList.remove('dragging');
+    ref.handle.classList.remove('dragging');
+  }
+  ref.hit.addEventListener('pointerup', end);
+  ref.hit.addEventListener('pointercancel', end);
 }
 
-function wireScrollNudge(handle, toyId, motor) {
-  handle.addEventListener('wheel', (e) => {
+function wireScrollNudge(hitEl, toyId, motor) {
+  hitEl.addEventListener('wheel', (e) => {
     e.preventDefault();
     CommandManager.nudgeLevel(toyId, motor.action, e.deltaY < 0 ? 1 : -1);
   }, { passive: false });
@@ -260,50 +257,32 @@ function wireStepButtons(row, toyId, motor) {
   row.querySelector('.minus').addEventListener('click', () => CommandManager.nudgeLevel(toyId, motor.action, -1));
 }
 
-// Only shown for 2+ motors. Toggling never changes any level — connected
-// anchors the shared angle to the outer ring's current angle; separate
-// freezes each ring's current visual angle into its own slot so nothing
-// snaps.
-function buildConnectToggle(toyId, motors, refsList) {
-  const label = document.createElement('label');
-  label.className = 'dial-toggle small';
-  label.innerHTML = '<input type="checkbox" class="connect-toggle" /> Connected (locked angle)';
-  const input = label.querySelector('input');
-
-  input.addEventListener('change', () => {
-    const state = getDialAngleState(toyId, motors);
-    if (input.checked) {
-      state.shared = state.perMotor[motors[0].action] ?? defaultAngleForRing(0);
-      state.mode = 'connected';
-    } else {
-      motors.forEach((m) => { state.perMotor[m.action] = state.shared; });
-      state.mode = 'separate';
-    }
-    refsList.forEach((ref) => renderRing(toyId, ref));
-  });
-
-  return label;
-}
-
-// One compound dial per toy: concentric ring-tracks (outer = first motor)
-// with a draggable stick per motor, plus a plain-text readout list below
-// (labels live outside the SVG so they never rotate/overlap when two
-// sticks share an angle in connected mode).
+// One compound arc dial per toy: concentric 270 deg ring-tracks
+// (outer = first motor) with a draggable bead per motor, plus
+// plain-text readout rows below. SVG order: tracks -> center dot ->
+// handles -> hit surfaces (outer-to-inner so inner rings win pointer
+// events in their zone, while the outermost ring's surface catches
+// the rest).
 function buildCompoundDial(toyId, motors) {
   const wrap = document.createElement('div');
   wrap.className = 'dial-widget';
 
   const ringTracks = motors
-    .map((_, i) => `<circle class="ring-track" cx="${DIAL_CENTER}" cy="${DIAL_CENTER}" r="${ringMaxRadius(i)}"></circle>`)
+    .map((_, i) => `<path class="ring-track" d="${describeArc(ringMaxRadius(i))}"></path>`)
     .join('');
 
-  const stickGroups = motors
-    .map((_, i) => `
-      <g class="stick-group">
-        <line class="stick-line" data-ring-color="${i}" x1="${DIAL_CENTER}" y1="${DIAL_CENTER}" x2="${DIAL_CENTER}" y2="${DIAL_CENTER}"></line>
-        <circle class="stick-handle" data-ring-color="${i}" cx="${DIAL_CENTER}" cy="${DIAL_CENTER}" r="${HANDLE_R}" tabindex="0"></circle>
-      </g>
-    `)
+  const handles = motors
+    .map((_, i) =>
+      `<circle class="stick-handle" data-ring-color="${i}" cx="${DIAL_CENTER}" cy="${DIAL_CENTER}" r="${HANDLE_R}"></circle>`
+    )
+    .join('');
+
+  // Hit circles drawn outer-to-inner so smaller (inner) surfaces sit
+  // on top and win the pointer for their own zone.
+  const hitCircles = motors
+    .map((_, i) =>
+      `<circle class="ring-hit" cx="${DIAL_CENTER}" cy="${DIAL_CENTER}" r="${hitRadius(i)}"></circle>`
+    )
     .join('');
 
   const readoutRows = motors
@@ -324,36 +303,45 @@ function buildCompoundDial(toyId, motors) {
     <svg class="compound-dial" viewBox="0 0 ${DIAL_VIEWBOX} ${DIAL_VIEWBOX}" width="220" height="220">
       ${ringTracks}
       <circle class="dial-center" cx="${DIAL_CENTER}" cy="${DIAL_CENTER}" r="3"></circle>
-      ${stickGroups}
+      ${handles}
+      ${hitCircles}
     </svg>
     <div class="dial-readouts">${readoutRows}</div>
   `;
 
   const svgEl = wrap.querySelector('.compound-dial');
-  const stickGroupEls = Array.from(wrap.querySelectorAll('.stick-group'));
-  const rowEls = Array.from(wrap.querySelectorAll('.dial-readout-row'));
+  const handleEls = Array.from(wrap.querySelectorAll('.stick-handle'));
+  const hits = Array.from(wrap.querySelectorAll('.ring-hit'));
+  const rows = Array.from(wrap.querySelectorAll('.dial-readout-row'));
 
-  const refsList = motors.map((motor, ringIndex) => ({
+  const refsList = motors.map((motor, i) => ({
     motor,
-    ringIndex,
-    line: stickGroupEls[ringIndex].querySelector('.stick-line'),
-    handle: stickGroupEls[ringIndex].querySelector('.stick-handle'),
-    row: rowEls[ringIndex],
-    readoutLevel: rowEls[ringIndex].querySelector('.readout-level'),
+    ringIndex: i,
+    handle: handleEls[i],
+    hit: hits[i],
+    row: rows[i],
+    readoutLevel: rows[i].querySelector('.readout-level'),
   }));
 
-  getDialAngleState(toyId, motors);
+  // Connected toggle — only shown for 2+ motors
+  let connectToggle = null;
+  if (motors.length >= 2) {
+    connectToggle = document.createElement('label');
+    connectToggle.className = 'dial-toggle';
+    connectToggle.innerHTML = '<input type="checkbox" class="connect-toggle" /> Connected (move together)';
+  }
+  function isConnected() {
+    return !!(connectToggle && connectToggle.querySelector('input').checked);
+  }
 
   refsList.forEach((ref) => {
-    wireHandleDrag(svgEl, toyId, ref, refsList);
-    wireScrollNudge(ref.handle, toyId, ref.motor);
+    wireRingDrag(svgEl, toyId, ref, refsList, isConnected);
+    wireScrollNudge(ref.hit, toyId, ref.motor);
     wireStepButtons(ref.row, toyId, ref.motor);
   });
 
-  if (motors.length >= 2) wrap.appendChild(buildConnectToggle(toyId, motors, refsList));
+  if (connectToggle) wrap.appendChild(connectToggle);
 
-  // Single plain assignment, not a chain — buildCompoundDial runs once
-  // per toy per render, unlike the old per-motor buildWheel.
   CommandManager.getState(toyId).onLevelChange = (action, level) => {
     const ref = refsList.find((r) => r.motor.action === action);
     if (ref) renderRing(toyId, ref);
@@ -364,9 +352,19 @@ function buildCompoundDial(toyId, motors) {
   return wrap;
 }
 
+
+// ---------------------------------------------------------------
+// Utility
+// ---------------------------------------------------------------
+
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
+
+
+// ---------------------------------------------------------------
+// Link flow — QR code + manual code
+// ---------------------------------------------------------------
 
 async function handleLink() {
   const btn = document.getElementById('linkBtn');
@@ -389,6 +387,11 @@ async function handleLink() {
   }
 }
 
+
+// ---------------------------------------------------------------
+// Global controls wiring
+// ---------------------------------------------------------------
+
 function wireGlobalControls() {
   document.getElementById('panicStop').addEventListener('click', () => CommandManager.panicStopAll());
   document.getElementById('linkBtn').addEventListener('click', handleLink);
@@ -404,6 +407,11 @@ function wireGlobalControls() {
     CommandManager.bestEffortStopAll();
   });
 }
+
+
+// ---------------------------------------------------------------
+// Init
+// ---------------------------------------------------------------
 
 async function init() {
   wireGlobalControls();

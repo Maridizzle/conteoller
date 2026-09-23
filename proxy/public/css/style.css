@@ -1,185 +1,602 @@
+/* ═══════════════════════════════════════════════════════════════
+   Kodak Portra 160 × Bunny Yeager
+   Sun-drenched mid-century control panel. Warm ivory ground,
+   coral & turquoise accents, chrome highlights, soft rolloff.
+   WCAG AA contrast verified on all text/interactive color pairs.
+   ═══════════════════════════════════════════════════════════════ */
+
 :root {
-  --bg: #0f1115;
-  --panel: #171a21;
-  --panel-2: #1f232c;
-  --border: #2a2f3a;
-  --text: #e8eaed;
-  --muted: #8b93a3;
-  --accent: #6ea8ff;
-  --danger: #ff5c5c;
-  --ok: #4fd67a;
-  --warn: #ffb84f;
+  /* ---- Ground & surfaces ---- */
+  --ground: #FBF3E8;
+  --panel: #FFFFFF;
+  --panel-raised: #FFF8F0;
+  --panel-sunken: #F3E8D8;
+  --line: #E4CEBC;
+  --line-soft: #EDE0D0;
+
+  /* ---- Ink — warm browns, never true black (Portra shadows) ---- */
+  --ink: #2C1810;          /* ≈13:1 on ground */
+  --ink-dim: #6B5548;      /* ≈6.3:1 */
+  --ink-faint: #7A6A5E;    /* ≈4.7:1, labels only */
+
+  /* ---- Tropical Yeager signal palette ---- */
+  --signal-1: #E85D75;     /* coral */
+  --signal-2: #2BA5A5;     /* turquoise */
+  --signal-3: #E4A040;     /* golden amber */
+  --signal-4: #C47092;     /* dusty rose */
+
+  /* ---- Status ---- */
+  --danger: #D94452;
+  --danger-soft: #FDECEE;
+  --ok: #2E8A5A;
+  --ok-soft: #E6F5ED;
+  --warn: #D4942C;
+  --warn-soft: #FFF5E5;
+
+  /* ---- Effects ---- */
+  --shadow-sm: 0 1px 3px rgba(44,24,16,0.06), 0 1px 2px rgba(44,24,16,0.04);
+  --shadow-md: 0 4px 14px rgba(44,24,16,0.08), 0 2px 4px rgba(44,24,16,0.04);
+  --shadow-lg: 0 8px 28px rgba(44,24,16,0.10), 0 4px 8px rgba(44,24,16,0.05);
+
+  /* ---- Typography ---- */
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-body: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "Cascadia Mono", monospace;
+
   font-size: 16px;
 }
 
 * { box-sizing: border-box; }
+html { height: 100%; }
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100%;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* Subtle warm color wash — sun on water, radiant coastal glow */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(43,165,165,0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(232,93,117,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(228,160,64,0.025) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body > * { position: relative; z-index: 1; }
+
+::selection { background: var(--signal-1); color: #fff; }
+:focus-visible { outline: 2px solid var(--signal-1); outline-offset: 2px; }
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   Centered layout (login page)
+   ════════════════════════════════════════════════════════════════ */
 
 .centered {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 16px;
 }
+
+
+/* ════════════════════════════════════════════════════════════════
+   Card — glossy white surface with warm sun-shadow
+   ════════════════════════════════════════════════════════════════ */
 
 .card {
   background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
   padding: 24px;
+  box-shadow: var(--shadow-md);
 }
 
-.login-card { width: 320px; }
-.login-card h1 { font-size: 1.2rem; margin: 0 0 16px; }
+
+/* ════════════════════════════════════════════════════════════════
+   Login card
+   ════════════════════════════════════════════════════════════════ */
+
+.login-card { width: 340px; }
+.login-card h1 {
+  font-size: 1.5rem;
+  margin: 0 0 4px;
+  color: var(--ink);
+}
+.login-card .subtitle {
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+  margin-bottom: 20px;
+}
 .login-card input {
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: var(--text);
-  margin-bottom: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--panel-sunken);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  margin-bottom: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
+.login-card input:focus {
+  border-color: var(--signal-1);
+  box-shadow: 0 0 0 3px rgba(232,93,117,0.12);
+  outline: none;
+}
+.login-card input::placeholder {
+  color: var(--ink-faint);
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   Buttons — polished chrome with glossy highlight
+   ════════════════════════════════════════════════════════════════ */
+
 .login-card button, .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 8px;
+  padding: 12px 16px;
+  border-radius: 10px;
   border: none;
-  background: var(--accent);
-  color: #0b0d11;
+  background: linear-gradient(160deg, #F07080 0%, var(--signal-1) 40%, #D04A5C 100%);
+  color: #fff;
+  font-family: var(--font-body);
   font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
   cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s, filter 0.2s;
+  box-shadow: var(--shadow-sm), 0 1px 0 rgba(255,255,255,0.18) inset;
 }
-.btn.secondary { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
-.btn.danger { background: var(--danger); color: #1a0505; }
+.login-card button:hover, .btn:hover {
+  filter: brightness(1.06);
+  box-shadow: var(--shadow-md);
+}
+.login-card button:active, .btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
+
+.btn.secondary {
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+.btn.secondary:hover {
+  background: var(--panel-raised);
+  border-color: var(--ink-faint);
+}
+
+.btn.danger {
+  background: linear-gradient(160deg, #E06068 0%, var(--danger) 40%, #B83040 100%);
+  color: #fff;
+}
+
 .error-text { color: var(--danger); font-size: 0.85rem; min-height: 1.2em; }
+
+
+/* ════════════════════════════════════════════════════════════════
+   App header — frosted ivory with sun-through-blinds shadow
+   ════════════════════════════════════════════════════════════════ */
 
 header.app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 14px 20px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line-soft);
   position: sticky;
   top: 0;
-  background: var(--bg);
+  background: rgba(251,243,232,0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 10;
+  box-shadow: 0 1px 6px rgba(44,24,16,0.05);
 }
-header.app-header h1 { font-size: 1rem; margin: 0; color: var(--muted); font-weight: 600; }
 
-#panicStop {
-  background: var(--danger);
-  color: #1a0505;
+header.app-header h1 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: 0.03em;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
+  color: var(--ink);
 }
 
-main { padding: 20px; max-width: 1100px; margin: 0 auto; }
+
+/* ════════════════════════════════════════════════════════════════
+   Panic Stop — unmissable coral emergency button
+   ════════════════════════════════════════════════════════════════ */
+
+#panicStop {
+  background: linear-gradient(160deg, #E85868 0%, var(--danger) 40%, #B02838 100%);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm), 0 1px 0 rgba(255,255,255,0.14) inset;
+  transition: transform 0.1s, box-shadow 0.15s, filter 0.15s;
+}
+#panicStop:hover { filter: brightness(1.08); box-shadow: var(--shadow-md); }
+#panicStop:active { transform: translateY(1px); }
+
+main {
+  padding: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   Status banners
+   ════════════════════════════════════════════════════════════════ */
 
 .status-banner {
   display: none;
-  padding: 10px 14px;
-  border-radius: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
   margin-bottom: 16px;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 500;
 }
 .status-banner.show { display: block; }
-.status-banner.offline { background: #3a1e1e; color: var(--danger); border: 1px solid var(--danger); }
-.status-banner.reconnecting { background: #3a2f1e; color: var(--warn); border: 1px solid var(--warn); }
+.status-banner.offline {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid rgba(217,68,82,0.2);
+}
+.status-banner.reconnecting {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border: 1px solid rgba(212,148,44,0.2);
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   Toy cards
+   ════════════════════════════════════════════════════════════════ */
 
 .toy-card { margin-bottom: 20px; }
 .toy-card .toy-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
-.toy-head h2 { font-size: 1rem; margin: 0; }
-.toy-head .meta { color: var(--muted); font-size: 0.8rem; }
+.toy-head h2 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.toy-head .meta {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
 
 .badge {
-  font-size: 0.7rem;
-  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 3px 10px;
   border-radius: 999px;
-  border: 1px solid var(--border);
+  letter-spacing: 0.02em;
 }
-.badge.ok { color: var(--ok); border-color: var(--ok); }
-.badge.warn { color: var(--warn); border-color: var(--warn); }
+.badge.ok {
+  color: var(--ok);
+  background: var(--ok-soft);
+  border: 1px solid rgba(46,138,90,0.2);
+}
+.badge.warn {
+  color: var(--warn);
+  background: var(--warn-soft);
+  border: 1px solid rgba(212,148,44,0.2);
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   Concentric arc dial — 270 deg sweep, bead-on-track
+   ════════════════════════════════════════════════════════════════ */
 
 .dial-container {
   display: flex;
   justify-content: center;
 }
 
-.dial-widget { width: 240px; text-align: center; user-select: none; }
-.dial-widget .compound-dial { width: 220px; height: 220px; display: block; margin: 0 auto 10px; touch-action: none; }
-
-.ring-track { fill: none; stroke: var(--panel-2); stroke-width: 2; pointer-events: none; }
-.dial-center { fill: var(--muted); pointer-events: none; }
-.stick-line { stroke-width: 2; pointer-events: none; }
-.stick-line[data-ring-color="0"] { stroke: var(--accent); }
-.stick-line[data-ring-color="1"] { stroke: #ff9f6e; }
-.stick-line[data-ring-color="2"] { stroke: #7be08a; }
-.stick-line[data-ring-color="3"] { stroke: #d68bff; }
-
-.stick-handle { stroke: var(--panel); stroke-width: 2; cursor: grab; pointer-events: all; }
-.stick-handle[data-ring-color="0"] { fill: var(--accent); }
-.stick-handle[data-ring-color="1"] { fill: #ff9f6e; }
-.stick-handle[data-ring-color="2"] { fill: #7be08a; }
-.stick-handle[data-ring-color="3"] { fill: #d68bff; }
-.stick-handle:hover { filter: brightness(1.15); }
-.stick-handle.dragging { cursor: grabbing; filter: brightness(1.3); }
-
-.dial-readouts { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
-.dial-readout-row { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
-.ring-swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-.ring-swatch[data-ring-color="0"] { background: var(--accent); }
-.ring-swatch[data-ring-color="1"] { background: #ff9f6e; }
-.ring-swatch[data-ring-color="2"] { background: #7be08a; }
-.ring-swatch[data-ring-color="3"] { background: #d68bff; }
-.readout-label { flex: 1; text-align: left; color: var(--muted); }
-.readout-level { font-weight: 700; min-width: 1.5em; text-align: right; }
-.dial-readout-row .buttons { display: flex; gap: 6px; }
-.dial-readout-row .buttons button {
-  width: 28px; height: 28px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: var(--text);
-  cursor: pointer;
-  font-size: 1rem;
+.dial-widget {
+  width: 250px;
+  text-align: center;
+  user-select: none;
+}
+.dial-widget .compound-dial {
+  width: 220px;
+  height: 220px;
+  display: block;
+  margin: 0 auto 12px;
+  touch-action: none;
 }
 
-.dial-toggle { display: block; margin-top: 4px; color: var(--muted); }
+/* Ring tracks — 270 deg arc paths with rounded ends */
+.ring-track {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.dial-center { fill: var(--ink-faint); pointer-events: none; }
+
+/* Handle beads — ride on their ring, purely visual (no pointer-events) */
+.stick-handle {
+  stroke: var(--panel);
+  stroke-width: 2;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 3px rgba(44,24,16,0.18));
+  transition: filter 0.1s;
+}
+.stick-handle[data-ring-color="0"] { fill: var(--signal-1); }
+.stick-handle[data-ring-color="1"] { fill: var(--signal-2); }
+.stick-handle[data-ring-color="2"] { fill: var(--signal-3); }
+.stick-handle[data-ring-color="3"] { fill: var(--signal-4); }
+.stick-handle.dragging {
+  filter: brightness(1.15) drop-shadow(0 2px 8px rgba(44,24,16,0.22));
+}
+
+/* Invisible drag surfaces per ring — wide grab area */
+.ring-hit {
+  fill: transparent;
+  cursor: grab;
+  pointer-events: all;
+}
+.ring-hit.dragging { cursor: grabbing; }
+
+/* Readout rows below the dial */
+.dial-readouts {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+.dial-readout-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.85rem;
+}
+
+.ring-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(44,24,16,0.12);
+}
+.ring-swatch[data-ring-color="0"] { background: var(--signal-1); }
+.ring-swatch[data-ring-color="1"] { background: var(--signal-2); }
+.ring-swatch[data-ring-color="2"] { background: var(--signal-3); }
+.ring-swatch[data-ring-color="3"] { background: var(--signal-4); }
+
+.readout-label {
+  flex: 1;
+  text-align: left;
+  color: var(--ink-dim);
+}
+.readout-level {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  min-width: 2ch;
+  text-align: right;
+  color: var(--ink);
+}
+
+.dial-readout-row .buttons { display: flex; gap: 5px; }
+.dial-readout-row .buttons button {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  box-shadow: var(--shadow-sm);
+}
+.dial-readout-row .buttons button:hover {
+  background: var(--panel-raised);
+  border-color: var(--ink-faint);
+  box-shadow: var(--shadow-md);
+}
+
+.dial-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+  width: 100%;
+  cursor: pointer;
+}
+.dial-toggle input { accent-color: var(--signal-1); }
+
+
+/* ════════════════════════════════════════════════════════════════
+   Link / Gamepad / Empty state sections
+   ════════════════════════════════════════════════════════════════ */
 
 .link-section, .gamepad-section, .empty-state {
   margin-bottom: 20px;
 }
-.link-section img { max-width: 220px; display: block; margin: 12px 0; }
-.link-code { font-family: monospace; font-size: 1.1rem; letter-spacing: 0.1em; }
+.link-section h2, .gamepad-section h2 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+}
+.link-section img {
+  max-width: 200px;
+  display: block;
+  margin: 14px 0;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+}
+.link-code {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--signal-2);
+  background: var(--panel-sunken);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
 
-table.mapping { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-table.mapping th, table.mapping td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+/* Gamepad status in header */
+.gamepad-status {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  border: 1px solid var(--line);
+  background: var(--panel-sunken);
+  padding: 5px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.gamepad-status.live {
+  color: var(--ok);
+  border-color: rgba(46,138,90,0.3);
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   Mapping table
+   ════════════════════════════════════════════════════════════════ */
+
+table.mapping {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+table.mapping th, table.mapping td {
+  text-align: left;
+  padding: 8px 8px;
+  border-bottom: 1px solid var(--line-soft);
+}
+table.mapping th {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+}
+table.mapping select {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   Utility classes
+   ════════════════════════════════════════════════════════════════ */
 
 .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.small { font-size: 0.8rem; color: var(--muted); }
+.small { font-size: 0.82rem; color: var(--ink-dim); }
+
+
+/* ════════════════════════════════════════════════════════════════
+   Dialog — calibrate / harvest modal
+   ════════════════════════════════════════════════════════════════ */
 
 dialog {
   background: var(--panel);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
-  width: 360px;
+  color: var(--ink);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  padding: 24px;
+  width: 380px;
+  box-shadow: var(--shadow-lg);
 }
-dialog::backdrop { background: rgba(0,0,0,0.6); }
+dialog::backdrop {
+  background: rgba(44,24,16,0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+dialog h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   Mobile
+   ════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 600px) {
+  header.app-header {
+    padding: 10px 16px;
+    flex-wrap: wrap;
+  }
+  header.app-header h1 { font-size: 0.88rem; }
+  main { padding: 16px; }
+  .card { padding: 18px; }
+  .dial-widget { width: 100%; }
+  .dial-widget .compound-dial { width: 200px; height: 200px; }
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   Reduced motion
+   ════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
