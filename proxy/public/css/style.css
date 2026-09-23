@@ -1,8 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
-   Kodak Portra 160 × Bunny Yeager
-   Sun-drenched mid-century control panel. Warm ivory ground,
-   coral & turquoise accents, chrome highlights, soft rolloff.
-   WCAG AA contrast verified on all text/interactive color pairs.
+   Kodak Portra 160 × Bunny Yeager — BLAZING edition
+   Sun-drenched mid-century poolside control panel. Warm ivory
+   ground, HOT pink & electric turquoise accents, glossy chrome
+   highlights, shimmering glow, lacquered surfaces, film grain.
+   WCAG AA contrast on all text pairs. Signal colors on controls
+   and accents only, never behind body text.
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
@@ -19,24 +21,34 @@
   --ink-dim: #6B5548;      /* ≈6.3:1 */
   --ink-faint: #7A6A5E;    /* ≈4.7:1, labels only */
 
-  /* ---- Tropical Yeager signal palette ---- */
-  --signal-1: #E85D75;     /* coral */
-  --signal-2: #2BA5A5;     /* turquoise */
-  --signal-3: #E4A040;     /* golden amber */
-  --signal-4: #C47092;     /* dusty rose */
+  /* ---- BLAZING tropical Yeager signal palette ---- */
+  --signal-1: #FF3B78;     /* hot pink */
+  --signal-2: #00C9C9;     /* electric turquoise */
+  --signal-3: #FFB020;     /* blazing amber */
+  --signal-4: #FF5DA0;     /* bright rose */
+
+  --glow-1: rgba(255,59,120,0.35);
+  --glow-2: rgba(0,201,201,0.35);
+  --glow-3: rgba(255,176,32,0.35);
+  --glow-4: rgba(255,93,160,0.35);
 
   /* ---- Status ---- */
-  --danger: #D94452;
-  --danger-soft: #FDECEE;
-  --ok: #2E8A5A;
-  --ok-soft: #E6F5ED;
-  --warn: #D4942C;
-  --warn-soft: #FFF5E5;
+  --danger: #E02040;
+  --danger-soft: #FDE8EC;
+  --ok: #10A060;
+  --ok-soft: #E0F8ED;
+  --warn: #E09020;
+  --warn-soft: #FFF4E0;
 
-  /* ---- Effects ---- */
-  --shadow-sm: 0 1px 3px rgba(44,24,16,0.06), 0 1px 2px rgba(44,24,16,0.04);
-  --shadow-md: 0 4px 14px rgba(44,24,16,0.08), 0 2px 4px rgba(44,24,16,0.04);
-  --shadow-lg: 0 8px 28px rgba(44,24,16,0.10), 0 4px 8px rgba(44,24,16,0.05);
+  /* ---- Chrome / glass effects ---- */
+  --chrome-light: rgba(255,255,255,0.7);
+  --chrome-mid: rgba(255,255,255,0.15);
+  --chrome-edge: rgba(255,255,255,0.05);
+
+  /* ---- Shadows — warm, sun-cast ---- */
+  --shadow-sm: 0 1px 3px rgba(44,24,16,0.08), 0 1px 2px rgba(44,24,16,0.05);
+  --shadow-md: 0 4px 16px rgba(44,24,16,0.10), 0 2px 4px rgba(44,24,16,0.06);
+  --shadow-lg: 0 10px 40px rgba(44,24,16,0.14), 0 4px 10px rgba(44,24,16,0.07);
 
   /* ---- Typography ---- */
   --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
@@ -60,15 +72,28 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Subtle warm color wash — sun on water, radiant coastal glow */
+/* Tropical color wash — VISIBLE, sun-on-water radiance */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse at 20% 10%, rgba(43,165,165,0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 90%, rgba(232,93,117,0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(228,160,64,0.025) 0%, transparent 60%);
+    radial-gradient(ellipse 80% 60% at 15% 5%, rgba(0,201,201,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 85% 85%, rgba(255,59,120,0.14) 0%, transparent 50%),
+    radial-gradient(ellipse 90% 70% at 50% 40%, rgba(255,176,32,0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 70% 15%, rgba(255,93,160,0.10) 0%, transparent 45%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Film grain texture overlay — subtle Portra feel */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
   pointer-events: none;
   z-index: 0;
 }
@@ -100,37 +125,75 @@ h1, h2, h3 {
 
 
 /* ════════════════════════════════════════════════════════════════
-   Card — glossy white surface with warm sun-shadow
+   Card — glossy lacquered surface with chrome highlight stripe
    ════════════════════════════════════════════════════════════════ */
 
 .card {
-  background: var(--panel);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,252,248,0.95) 100%);
   border: 1px solid var(--line-soft);
-  border-radius: 16px;
+  border-top: 1px solid rgba(255,255,255,0.8);
+  border-radius: 18px;
   padding: 24px;
-  box-shadow: var(--shadow-md);
+  box-shadow:
+    var(--shadow-md),
+    inset 0 1px 0 var(--chrome-light),
+    inset 0 -1px 0 rgba(228,206,188,0.3);
+  position: relative;
+  overflow: hidden;
 }
+
+/* Glossy highlight shimmer on top edge */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9) 30%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.9) 70%, transparent);
+  z-index: 2;
+}
+
+/* Subtle warm inner glow */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse at 30% 0%, rgba(255,176,32,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 100%, rgba(255,59,120,0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.card > * { position: relative; z-index: 1; }
 
 
 /* ════════════════════════════════════════════════════════════════
    Login card
    ════════════════════════════════════════════════════════════════ */
 
-.login-card { width: 340px; }
+.login-card { width: 360px; }
 .login-card h1 {
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   margin: 0 0 4px;
   color: var(--ink);
+  background: linear-gradient(135deg, var(--ink) 0%, #5A3028 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 .login-card .subtitle {
   font-size: 0.85rem;
   color: var(--ink-dim);
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 .login-card input {
   width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
+  padding: 13px 16px;
+  border-radius: 12px;
   border: 1px solid var(--line);
   background: var(--panel-sunken);
   color: var(--ink);
@@ -138,10 +201,11 @@ h1, h2, h3 {
   font-size: 0.95rem;
   margin-bottom: 14px;
   transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: inset 0 1px 3px rgba(44,24,16,0.06);
 }
 .login-card input:focus {
   border-color: var(--signal-1);
-  box-shadow: 0 0 0 3px rgba(232,93,117,0.12);
+  box-shadow: 0 0 0 3px rgba(255,59,120,0.15), 0 0 20px rgba(255,59,120,0.08);
   outline: none;
 }
 .login-card input::placeholder {
@@ -150,7 +214,7 @@ h1, h2, h3 {
 
 
 /* ════════════════════════════════════════════════════════════════
-   Buttons — polished chrome with glossy highlight
+   Buttons — polished chrome with GLOSSY highlight stripe
    ════════════════════════════════════════════════════════════════ */
 
 .login-card button, .btn {
@@ -158,41 +222,78 @@ h1, h2, h3 {
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 12px 16px;
-  border-radius: 10px;
+  padding: 13px 18px;
+  border-radius: 12px;
   border: none;
-  background: linear-gradient(160deg, #F07080 0%, var(--signal-1) 40%, #D04A5C 100%);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 40%),
+    linear-gradient(160deg, #FF6090 0%, var(--signal-1) 40%, #E01858 100%);
   color: #fff;
   font-family: var(--font-body);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   letter-spacing: 0.02em;
   cursor: pointer;
   transition: transform 0.1s, box-shadow 0.2s, filter 0.2s;
-  box-shadow: var(--shadow-sm), 0 1px 0 rgba(255,255,255,0.18) inset;
+  box-shadow:
+    var(--shadow-sm),
+    0 1px 0 rgba(255,255,255,0.3) inset,
+    0 0 12px rgba(255,59,120,0.15);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  position: relative;
+  overflow: hidden;
 }
+
+/* Chrome highlight stripe across button */
+.login-card button::before, .btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+  border-radius: 12px 12px 0 0;
+  pointer-events: none;
+}
+
 .login-card button:hover, .btn:hover {
-  filter: brightness(1.06);
-  box-shadow: var(--shadow-md);
+  filter: brightness(1.08) saturate(1.1);
+  box-shadow:
+    var(--shadow-md),
+    0 1px 0 rgba(255,255,255,0.3) inset,
+    0 0 24px rgba(255,59,120,0.25);
+  transform: translateY(-1px);
 }
 .login-card button:active, .btn:active {
   transform: translateY(1px);
+  filter: brightness(0.96);
 }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; transform: none; }
 
 .btn.secondary {
-  background: var(--panel);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,252,248,0.9) 100%);
   color: var(--ink);
   border: 1px solid var(--line);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.8);
+  text-shadow: none;
+}
+.btn.secondary::before {
+  background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
 }
 .btn.secondary:hover {
-  background: var(--panel-raised);
-  border-color: var(--ink-faint);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.8) 0%, var(--panel-raised) 100%);
+  border-color: var(--signal-2);
+  box-shadow: var(--shadow-md), 0 0 12px rgba(0,201,201,0.12);
+  filter: none;
 }
 
 .btn.danger {
-  background: linear-gradient(160deg, #E06068 0%, var(--danger) 40%, #B83040 100%);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 40%),
+    linear-gradient(160deg, #F04050 0%, var(--danger) 40%, #C01030 100%);
   color: #fff;
 }
 
@@ -200,7 +301,7 @@ h1, h2, h3 {
 
 
 /* ════════════════════════════════════════════════════════════════
-   App header — frosted ivory with sun-through-blinds shadow
+   App header — frosted glass with chrome edge, tropical tint
    ════════════════════════════════════════════════════════════════ */
 
 header.app-header {
@@ -209,46 +310,75 @@ header.app-header {
   justify-content: space-between;
   gap: 12px;
   padding: 14px 20px;
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid rgba(228,206,188,0.4);
   position: sticky;
   top: 0;
-  background: rgba(251,243,232,0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background:
+    linear-gradient(180deg, rgba(255,252,248,0.92) 0%, rgba(251,243,232,0.88) 100%);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
   z-index: 10;
-  box-shadow: 0 1px 6px rgba(44,24,16,0.05);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.6),
+    0 4px 20px rgba(44,24,16,0.06);
 }
 
 header.app-header h1 {
   font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: 0.03em;
-  color: var(--ink);
+  background: linear-gradient(135deg, var(--signal-1) 0%, var(--signal-4) 50%, var(--signal-2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 
 /* ════════════════════════════════════════════════════════════════
-   Panic Stop — unmissable coral emergency button
+   Panic Stop — BLAZING unmissable emergency button with glow
    ════════════════════════════════════════════════════════════════ */
 
 #panicStop {
-  background: linear-gradient(160deg, #E85868 0%, var(--danger) 40%, #B02838 100%);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 40%),
+    linear-gradient(160deg, #FF4858 0%, var(--danger) 40%, #B81830 100%);
   color: #fff;
   font-family: var(--font-body);
   font-weight: 800;
   font-size: 0.78rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 10px 22px;
+  padding: 10px 24px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  box-shadow: var(--shadow-sm), 0 1px 0 rgba(255,255,255,0.14) inset;
+  box-shadow:
+    var(--shadow-sm),
+    0 1px 0 rgba(255,255,255,0.2) inset,
+    0 0 16px rgba(224,32,64,0.2);
   transition: transform 0.1s, box-shadow 0.15s, filter 0.15s;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
 }
-#panicStop:hover { filter: brightness(1.08); box-shadow: var(--shadow-md); }
-#panicStop:active { transform: translateY(1px); }
+#panicStop::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%);
+  border-radius: 12px 12px 0 0;
+  pointer-events: none;
+}
+#panicStop:hover {
+  filter: brightness(1.1);
+  box-shadow:
+    var(--shadow-md),
+    0 0 30px rgba(224,32,64,0.35);
+  transform: translateY(-1px);
+}
+#panicStop:active { transform: translateY(1px); filter: brightness(0.95); }
 
 main {
   padding: 20px;
@@ -258,13 +388,13 @@ main {
 
 
 /* ════════════════════════════════════════════════════════════════
-   Status banners
+   Status banners — vivid with glow
    ════════════════════════════════════════════════════════════════ */
 
 .status-banner {
   display: none;
-  padding: 12px 16px;
-  border-radius: 12px;
+  padding: 13px 18px;
+  border-radius: 14px;
   margin-bottom: 16px;
   font-size: 0.88rem;
   font-weight: 500;
@@ -273,12 +403,14 @@ main {
 .status-banner.offline {
   background: var(--danger-soft);
   color: var(--danger);
-  border: 1px solid rgba(217,68,82,0.2);
+  border: 1px solid rgba(224,32,64,0.2);
+  box-shadow: 0 0 16px rgba(224,32,64,0.06);
 }
 .status-banner.reconnecting {
   background: var(--warn-soft);
   color: var(--warn);
-  border: 1px solid rgba(212,148,44,0.2);
+  border: 1px solid rgba(224,144,32,0.2);
+  box-shadow: 0 0 16px rgba(224,144,32,0.06);
 }
 
 
@@ -286,7 +418,7 @@ main {
    Toy cards
    ════════════════════════════════════════════════════════════════ */
 
-.toy-card { margin-bottom: 20px; }
+.toy-card { margin-bottom: 22px; }
 .toy-card .toy-head {
   display: flex;
   align-items: center;
@@ -295,7 +427,7 @@ main {
 }
 .toy-head h2 {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--ink);
 }
@@ -309,24 +441,27 @@ main {
   font-family: var(--font-mono);
   font-size: 0.68rem;
   font-weight: 500;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 999px;
   letter-spacing: 0.02em;
 }
 .badge.ok {
   color: var(--ok);
   background: var(--ok-soft);
-  border: 1px solid rgba(46,138,90,0.2);
+  border: 1px solid rgba(16,160,96,0.25);
+  box-shadow: 0 0 8px rgba(16,160,96,0.08);
 }
 .badge.warn {
   color: var(--warn);
   background: var(--warn-soft);
-  border: 1px solid rgba(212,148,44,0.2);
+  border: 1px solid rgba(224,144,32,0.25);
+  box-shadow: 0 0 8px rgba(224,144,32,0.08);
 }
 
 
 /* ════════════════════════════════════════════════════════════════
    Concentric arc dial — 270 deg sweep, bead-on-track
+   GLOSSY, GLOWING, SHIMMERING
    ════════════════════════════════════════════════════════════════ */
 
 .dial-container {
@@ -335,46 +470,73 @@ main {
 }
 
 .dial-widget {
-  width: 250px;
+  width: 260px;
   text-align: center;
   user-select: none;
 }
 .dial-widget .compound-dial {
-  width: 220px;
-  height: 220px;
+  width: 230px;
+  height: 230px;
   display: block;
-  margin: 0 auto 12px;
+  margin: 0 auto 14px;
   touch-action: none;
 }
 
-/* Ring tracks — 270 deg arc paths with rounded ends */
+/* Ring tracks — 270 deg arc paths, glowing colored strokes */
 .ring-track {
   fill: none;
   stroke: var(--line);
-  stroke-width: 2.5;
+  stroke-width: 3;
   stroke-linecap: round;
   pointer-events: none;
+  filter: drop-shadow(0 0 3px rgba(228,206,188,0.4));
 }
 
-.dial-center { fill: var(--ink-faint); pointer-events: none; }
+.dial-center {
+  fill: var(--ink-faint);
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(122,106,94,0.3));
+}
 
-/* Handle beads — ride on their ring, purely visual (no pointer-events) */
+/* Handle beads — glossy lacquered spheres with colored GLOW halo */
 .stick-handle {
   stroke: var(--panel);
-  stroke-width: 2;
+  stroke-width: 2.5;
   pointer-events: none;
-  filter: drop-shadow(0 1px 3px rgba(44,24,16,0.18));
-  transition: filter 0.1s;
+  transition: filter 0.15s;
 }
-.stick-handle[data-ring-color="0"] { fill: var(--signal-1); }
-.stick-handle[data-ring-color="1"] { fill: var(--signal-2); }
-.stick-handle[data-ring-color="2"] { fill: var(--signal-3); }
-.stick-handle[data-ring-color="3"] { fill: var(--signal-4); }
-.stick-handle.dragging {
-  filter: brightness(1.15) drop-shadow(0 2px 8px rgba(44,24,16,0.22));
+.stick-handle[data-ring-color="0"] {
+  fill: var(--signal-1);
+  filter: drop-shadow(0 0 6px var(--glow-1)) drop-shadow(0 1px 3px rgba(44,24,16,0.2));
+}
+.stick-handle[data-ring-color="1"] {
+  fill: var(--signal-2);
+  filter: drop-shadow(0 0 6px var(--glow-2)) drop-shadow(0 1px 3px rgba(44,24,16,0.2));
+}
+.stick-handle[data-ring-color="2"] {
+  fill: var(--signal-3);
+  filter: drop-shadow(0 0 6px var(--glow-3)) drop-shadow(0 1px 3px rgba(44,24,16,0.2));
+}
+.stick-handle[data-ring-color="3"] {
+  fill: var(--signal-4);
+  filter: drop-shadow(0 0 6px var(--glow-4)) drop-shadow(0 1px 3px rgba(44,24,16,0.2));
 }
 
-/* Invisible drag surfaces per ring — wide grab area */
+/* Dragging — BRIGHT glow flare */
+.stick-handle.dragging[data-ring-color="0"] {
+  filter: brightness(1.2) drop-shadow(0 0 14px var(--glow-1)) drop-shadow(0 0 28px rgba(255,59,120,0.2));
+}
+.stick-handle.dragging[data-ring-color="1"] {
+  filter: brightness(1.2) drop-shadow(0 0 14px var(--glow-2)) drop-shadow(0 0 28px rgba(0,201,201,0.2));
+}
+.stick-handle.dragging[data-ring-color="2"] {
+  filter: brightness(1.2) drop-shadow(0 0 14px var(--glow-3)) drop-shadow(0 0 28px rgba(255,176,32,0.2));
+}
+.stick-handle.dragging[data-ring-color="3"] {
+  filter: brightness(1.2) drop-shadow(0 0 14px var(--glow-4)) drop-shadow(0 0 28px rgba(255,93,160,0.2));
+}
+
+/* Invisible drag surfaces per ring */
 .ring-hit {
   fill: transparent;
   cursor: grab;
@@ -386,8 +548,8 @@ main {
 .dial-readouts {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  margin-bottom: 8px;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 .dial-readout-row {
   display: flex;
@@ -397,17 +559,28 @@ main {
 }
 
 .ring-swatch {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(44,24,16,0.12);
 }
-.ring-swatch[data-ring-color="0"] { background: var(--signal-1); }
-.ring-swatch[data-ring-color="1"] { background: var(--signal-2); }
-.ring-swatch[data-ring-color="2"] { background: var(--signal-3); }
-.ring-swatch[data-ring-color="3"] { background: var(--signal-4); }
+.ring-swatch[data-ring-color="0"] {
+  background: var(--signal-1);
+  box-shadow: 0 0 6px var(--glow-1), 0 1px 3px rgba(44,24,16,0.12);
+}
+.ring-swatch[data-ring-color="1"] {
+  background: var(--signal-2);
+  box-shadow: 0 0 6px var(--glow-2), 0 1px 3px rgba(44,24,16,0.12);
+}
+.ring-swatch[data-ring-color="2"] {
+  background: var(--signal-3);
+  box-shadow: 0 0 6px var(--glow-3), 0 1px 3px rgba(44,24,16,0.12);
+}
+.ring-swatch[data-ring-color="3"] {
+  background: var(--signal-4);
+  box-shadow: 0 0 6px var(--glow-4), 0 1px 3px rgba(44,24,16,0.12);
+}
 
 .readout-label {
   flex: 1;
@@ -425,24 +598,30 @@ main {
 
 .dial-readout-row .buttons { display: flex; gap: 5px; }
 .dial-readout-row .buttons button {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
   border: 1px solid var(--line);
-  background: var(--panel);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.7) 0%, var(--panel) 100%);
   color: var(--ink);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.05rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
-  box-shadow: var(--shadow-sm);
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.6);
 }
 .dial-readout-row .buttons button:hover {
-  background: var(--panel-raised);
-  border-color: var(--ink-faint);
-  box-shadow: var(--shadow-md);
+  background:
+    linear-gradient(180deg, #fff 0%, var(--panel-raised) 100%);
+  border-color: var(--signal-2);
+  box-shadow: var(--shadow-md), 0 0 8px rgba(0,201,201,0.1);
+  transform: translateY(-1px);
+}
+.dial-readout-row .buttons button:active {
+  transform: translateY(1px);
 }
 
 .dial-toggle {
@@ -450,8 +629,8 @@ main {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  margin-top: 6px;
-  padding-top: 8px;
+  margin-top: 8px;
+  padding-top: 10px;
   border-top: 1px solid var(--line-soft);
   font-size: 0.8rem;
   color: var(--ink-dim);
@@ -466,29 +645,32 @@ main {
    ════════════════════════════════════════════════════════════════ */
 
 .link-section, .gamepad-section, .empty-state {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 .link-section h2, .gamepad-section h2 {
   font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   margin-bottom: 10px;
 }
 .link-section img {
   max-width: 200px;
   display: block;
   margin: 14px 0;
-  border-radius: 12px;
-  box-shadow: var(--shadow-md);
+  border-radius: 14px;
+  box-shadow:
+    var(--shadow-md),
+    0 0 20px rgba(0,201,201,0.08);
 }
 .link-code {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 500;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   color: var(--signal-2);
   background: var(--panel-sunken);
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  text-shadow: 0 0 12px rgba(0,201,201,0.2);
 }
 
 /* Gamepad status in header */
@@ -497,19 +679,22 @@ main {
   font-size: 0.72rem;
   color: var(--ink-faint);
   border: 1px solid var(--line);
-  background: var(--panel-sunken);
-  padding: 5px 10px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, var(--panel-sunken) 100%);
+  padding: 5px 12px;
   border-radius: 999px;
   white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
 }
 .gamepad-status.live {
   color: var(--ok);
-  border-color: rgba(46,138,90,0.3);
+  border-color: rgba(16,160,96,0.35);
+  box-shadow: 0 0 8px rgba(16,160,96,0.1), inset 0 1px 0 rgba(255,255,255,0.5);
 }
 
 
 /* ════════════════════════════════════════════════════════════════
-   Mapping table
+   Mapping table — chrome accents
    ════════════════════════════════════════════════════════════════ */
 
 table.mapping {
@@ -519,7 +704,7 @@ table.mapping {
 }
 table.mapping th, table.mapping td {
   text-align: left;
-  padding: 8px 8px;
+  padding: 9px 8px;
   border-bottom: 1px solid var(--line-soft);
 }
 table.mapping th {
@@ -527,17 +712,19 @@ table.mapping th {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--ink-faint);
+  color: var(--signal-1);
 }
 table.mapping select {
   width: 100%;
   font-family: var(--font-body);
   font-size: 0.82rem;
-  background: var(--panel);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.6) 0%, var(--panel) 100%);
   color: var(--ink);
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 6px 8px;
+  border-radius: 10px;
+  padding: 7px 10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
 }
 
 
@@ -550,27 +737,36 @@ table.mapping select {
 
 
 /* ════════════════════════════════════════════════════════════════
-   Dialog — calibrate / harvest modal
+   Dialog — calibrate / harvest modal, glossy glass
    ════════════════════════════════════════════════════════════════ */
 
 dialog {
-  background: var(--panel);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,252,248,0.98) 100%);
   color: var(--ink);
-  border: 1px solid var(--line-soft);
-  border-radius: 16px;
-  padding: 24px;
-  width: 380px;
-  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(228,206,188,0.4);
+  border-top: 1px solid rgba(255,255,255,0.8);
+  border-radius: 20px;
+  padding: 28px;
+  width: 400px;
+  box-shadow:
+    var(--shadow-lg),
+    0 0 40px rgba(255,59,120,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.8);
 }
 dialog::backdrop {
-  background: rgba(44,24,16,0.3);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(44,24,16,0.35);
+  backdrop-filter: blur(8px) saturate(1.3);
+  -webkit-backdrop-filter: blur(8px) saturate(1.3);
 }
 dialog h3 {
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--signal-1) 0%, var(--signal-2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 
@@ -583,7 +779,7 @@ dialog h3 {
     padding: 10px 16px;
     flex-wrap: wrap;
   }
-  header.app-header h1 { font-size: 0.88rem; }
+  header.app-header h1 { font-size: 0.92rem; }
   main { padding: 16px; }
   .card { padding: 18px; }
   .dial-widget { width: 100%; }
