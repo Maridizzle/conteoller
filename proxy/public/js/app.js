@@ -378,8 +378,8 @@ async function handleLink() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'link failed');
     resultEl.innerHTML = `
-      <img src="${data.qrCode || data.qrcode || ''}" alt="QR" />
-      <div>Or enter code: <span class="link-code">${escapeHtml(data.code || data.qrcodeCode || '')}</span></div>
+      <img src="${data.data?.qr || data.qrCode || data.qrcode || ''}" alt="QR" />
+      <div>Or enter code: <span class="link-code">${escapeHtml(data.data?.code || data.qrcodeCode || '')}</span></div>
       <p class="small">After scanning, the app will call our callback and toys will appear below.</p>
     `;
   } catch (err) {
