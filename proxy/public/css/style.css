@@ -44,6 +44,7 @@
   --font-mono: "DM Mono", ui-monospace, "Cascadia Mono", monospace;
 
   font-size: 16px;
+  color-scheme: light only;
 }
 
 * { box-sizing: border-box; }
